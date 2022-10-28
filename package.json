@@ -1,0 +1,17 @@
+{
+  "private": true,
+  "workspaces": [
+    "cms",
+    "app"
+  ],
+  "scripts": {
+    "dev": "npx turbo run dev"
+  },
+  "devDependencies": {
+    "turbo": "^1.5.5"
+  },
+  "name": "tRPC-x-Keystone-CMS",
+  "version": "1.0.0",
+  "repository": "https://github.com/Westsaid/tRPC-x-Keystone-CMS",
+  "license": "MIT"
+}
