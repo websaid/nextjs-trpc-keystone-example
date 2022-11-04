@@ -1,5 +1,5 @@
 import type { InferGetStaticPropsType } from "next";
-import { cmsTrpc } from "../lib/clientTrpc";
+import { cmsTrpc, trpc } from "../lib/clientTrpc";
 import { DocumentRenderer } from "@keystone-6/document-renderer";
 
 function HomePage({
@@ -11,17 +11,29 @@ function HomePage({
       typeof DocumentRenderer
     >["0"]["document"];
 
+  const {data, isLoading} = trpc.index.getTestimonials.useQuery()
+
   return (
     <>
       <div>
         <h1>NextJS x tRPC x KeystoneJS</h1>
         <p>This example shows</p>
+        <h2>User Testimonials</h2>
+        {isLoading ? (
+          <p>Testimonials Loading</p>
+        ) : (
+          data?.map((testimonial) => <div key={testimonial.id}>
+            <h3>{testimonial.name}</h3>
+            <p>{testimonial.content}</p>
+          </div>)
+        )}
         {translation && (
           <div key={translation.homeText}>
             <h2>{translation.language}</h2>
             <p>{translation.homeText}</p>
           </div>
         )}
+        <h2>Testimonials</h2>
         {blog &&
           blog.map((post) => (
             <div key={post.id}>
