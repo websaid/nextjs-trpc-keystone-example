@@ -36,6 +36,8 @@ var import_core = require("@keystone-6/core");
 var import_fields = require("@keystone-6/core/fields");
 var import_fields_document = require("@keystone-6/fields-document");
 var import_access = require("@keystone-6/core/access");
+var import_zod = require("zod");
+var languageOptions = import_zod.z.enum(["de", "en"]);
 var lists = {
   User: (0, import_core.list)({
     access: import_access.allowAll,
@@ -109,7 +111,7 @@ var lists = {
   Translation: (0, import_core.list)({
     fields: {
       language: (0, import_fields.select)({
-        options: ["de", "en"],
+        options: Object.keys(languageOptions.Values),
         isIndexed: "unique"
       }),
       homeText: (0, import_fields.text)({
@@ -171,6 +173,9 @@ async function createContextTrpc(opts, keystoneCtx) {
   return await createContextInner({ opts, keystoneCtx });
 }
 
+// trpc/routes/translationRouter.ts
+var import_zod2 = require("zod");
+
 // trpc/trpc.ts
 var import_superjson = __toESM(require("superjson"));
 var import_server = require("@trpc/server");
@@ -188,15 +193,38 @@ var t = import_server.initTRPC.context().create({
 
 // trpc/routes/translationRouter.ts
 var translationRouter = t.router({
-  translations: t.procedure.query(async ({ ctx }) => {
-    const data = await ctx.keystoneCtx.prisma.translation.findMany({});
+  translation: t.procedure.input(import_zod2.z.object({
+    option: languageOptions
+  })).query(async ({ ctx, input: { option } }) => {
+    const data = await ctx.keystoneCtx.prisma.translation.findUniqueOrThrow({
+      where: {
+        language: option
+      }
+    });
+    return data;
+  }),
+  translationOptions: t.procedure.query(async ({ ctx }) => {
+    const options = await ctx.keystoneCtx.prisma.translation.findMany({
+      select: {
+        language: true
+      }
+    });
+    return options;
+  })
+});
+
+// trpc/routes/blogRouter.ts
+var blogRouter = t.router({
+  published: t.procedure.query(async ({ ctx }) => {
+    const data = await ctx.keystoneCtx.prisma.post.findMany({});
     return data;
   })
 });
 
 // trpc/routes/index.ts
 var appRouter = t.router({
-  translations: translationRouter
+  translations: translationRouter,
+  blog: blogRouter
 });
 
 // keystone.ts

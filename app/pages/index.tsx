@@ -1,34 +1,52 @@
 import type { InferGetStaticPropsType } from "next";
 import { cmsTrpc } from "../lib/clientTrpc";
-import { GetStaticProps } from "next";
+import { DocumentRenderer } from "@keystone-6/document-renderer";
 
 function HomePage({
-  translations,
+  translation,
+  blog,
 }: InferGetStaticPropsType<typeof getStaticProps>) {
+  const stringToSlate = (str: string) =>
+    JSON.parse(str) as unknown as Parameters<
+      typeof DocumentRenderer
+    >["0"]["document"];
 
   return (
     <>
       <div>
         <h1>NextJS x tRPC x KeystoneJS</h1>
-        {translations && translations.map((item) => (
-          <div key={item.homeText}>
-            <h2>{item.language}</h2>
-            <p>{item.homeText}</p>
+        <p>This example shows</p>
+        {translation && (
+          <div key={translation.homeText}>
+            <h2>{translation.language}</h2>
+            <p>{translation.homeText}</p>
           </div>
-        ))}
-        <pre>{JSON.stringify(translations)}</pre>
+        )}
+        {blog &&
+          blog.map((post) => (
+            <div key={post.id}>
+              <h2>{post.title}</h2>
+              <DocumentRenderer document={stringToSlate(post.content)} />
+            </div>
+          ))}
       </div>
     </>
   );
-};
+}
 
 export const getStaticProps = async () => {
-
-  const translations = await cmsTrpc.translations.translations.query().catch(e => console.error("Couldnt get cms data"));
+  const translation = await cmsTrpc.translations.translation
+    .query({ option: "de" })
+    .catch((e) => console.error("Couldnt get cms data"));
+  const blog =
+    (await cmsTrpc.blog.published
+      .query()
+      .catch((e) => console.error("Couldnt get cms data"))) || undefined;
 
   return {
     props: {
-      translations: translations || undefined,
+      translation: translation || undefined,
+      blog: blog,
     },
   };
 };

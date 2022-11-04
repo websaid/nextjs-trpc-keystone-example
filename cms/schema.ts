@@ -25,7 +25,7 @@ import {
   password,
   timestamp,
   select,
-  
+
 } from '@keystone-6/core/fields';
 
 // The document field is a more complicated field, so it's in its own package
@@ -40,6 +40,10 @@ import { document } from '@keystone-6/fields-document';
 import { Lists } from '.keystone/types';
 
 import { allowAll } from '@keystone-6/core/access';
+import { z } from 'zod';
+
+export const languageOptions = z.enum(["de", "en"]);
+
 // We have a users list, a blogs list, and tags for blog posts, so they can be filtered.
 // Each property on the exported object will become the name of a list (a.k.a. the `listKey`),
 // with the value being the definition of the list, including the fields.
@@ -137,7 +141,7 @@ export const lists: Lists = {
   Translation: list({
     fields: {
       language: select({
-        options: ["de", "en"],
+        options: Object.keys(languageOptions.Values),
         isIndexed: "unique",
       }),
       homeText: text({
@@ -148,7 +152,7 @@ export const lists: Lists = {
     },
     access: allowAll,
   }),
-  
+
 
   // Our final list is the tag list. This field is just a name and a relationship to posts
   Tag: list({

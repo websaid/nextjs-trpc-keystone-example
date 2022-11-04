@@ -1,5 +1,5 @@
 import { httpBatchLink } from "@trpc/client";
-import { createTRPCProxyClient } from "@trpc/react";
+import { createTRPCProxyClient } from "@trpc/react-query";
 import { CmsAppRouter } from "../../cms/trpc/routes";
 import superjson from 'superjson';
 

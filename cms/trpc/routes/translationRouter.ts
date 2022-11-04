@@ -1,10 +1,30 @@
+import { z } from "zod";
+import { languageOptions } from "../../schema";
 import { t } from "../trpc";
 
 export const translationRouter = t.router({
-  translations: t.procedure.query(async ({ ctx }) => {
-    const data = (await ctx.keystoneCtx.prisma.translation.findMany({}))
+  translation: t.procedure
+    .input(z.object({
+      option: languageOptions
+    }))
+    .query(async ({ ctx, input: {option} }) => {
+      const data = (await ctx.keystoneCtx.prisma.translation.findUniqueOrThrow({
+        where: {
+          language: option
+        }
+      }))
 
-    return data;
-  }),
+      return data;
+    }),
+  translationOptions: t.procedure
+    .query(async ({ ctx }) => {
+      const options = (await ctx.keystoneCtx.prisma.translation.findMany({
+        select: {
+          language: true
+        }
+      }))
+
+      return options;
+    })
 });
 // export type definition of API
